@@ -1,0 +1,226 @@
+---
+title: "downloadNEON"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+
+library(reticulate)
+use_condaenv("r-reticulate")
+conda_install(envname="r-reticulate", packages="requests")
+os <- import("os")
+# os$listdir(".")
+
+```
+
+```{python}
+# conda_install('requests')
+import requests
+import json
+import csv
+SITECODE = "GUIL" #the site code for Abby Road
+# http://data.neonscience.org/data-product-view?dpCode=DP1.00036.001
+PRODUCTCODE = "DP4.00200.001" #the product code for eddy covariance data product (DP4.00200.001).
+
+#http://data.neonscience.org/data-product-view?dpCode=DP4.00200.001
+SERVER = "http://data.neonscience.org/api/v0/" #the current server address
+
+site_response = requests.get(SERVER + 'sites/' + SITECODE)
+
+
+site_response_json = site_response.json()
+# print(json.dumps(site_response_json, indent=2)) #using json.dumps for formatting
+
+
+
+data_products = site_response_json['data']['dataProducts']
+months=[]
+#use a list comprehension here if you're feeling fancy
+for data_product in data_products:
+    if (data_product['dataProductCode'] == PRODUCTCODE):
+        months = data_product['availableMonths']
+
+# print(months)
+
+x =site_response_json
+f = csv.writer(open('GuilavailableNEONdata.csv','w+', newline='\n'))
+
+f.writerow(['data product code', 'data product title', 'available months', 'urls'])
+codesGuil = []
+titlesGuil = []
+flightline = False
+for key,val in x.items():
+    # print(key)
+    code = None
+    title = None
+    months = None
+    urls = None
+
+    for key3,val3 in val.items():
+        flightline = False
+        # print(key3)
+        if key3 == 'dataProducts':
+            # print('HERE HERE')
+            # print(val3)
+            for listitem in val3:
+                
+                for key2, val2 in listitem.items():
+                    if 'flightline' in val2 or 'mosaic' in val2:
+                        flightline = True
+                    if key2 == 'dataProductCode':
+                        code = val2
+                        if not flightline:
+                            codesGuil.append(code)
+                    if key2 == 'dataProductTitle':
+                        title = val2
+                        if not flightline:
+                            titlesGuil.append(title)
+                    if key2 == 'availableMonths':
+                        months = val2
+                    if key2 == 'availableDataUrls':
+                        urls = val2
+                    if code and title and months and urls and not flightline:
+                        f.writerow([code,title,months,urls])
+                        code = None
+                        title = None
+                        months = None
+                        urls = None
+                    
+
+```
+
+
+
+```{r}
+# download all Guilarte data
+dpIDs <- py$codesGuil
+titles <- py$titlesGuil 
+#dpIDs <- c("DP1.20015.001", "DP1.20016.001")
+#titles <- c("Specific conductivity in groundwater", "Elevation of surface water")
+
+j <- 0
+for (dp in dpIDs){
+    tryCatch(
+        expr = {waterguil <- loadByProduct(dpID=dp, site="GUIL", check.size = FALSE)},
+        error = function(e){
+            message('Caught an error!')
+            print(e)
+        }
+    )
+    i <- 0
+    j <- j + 1
+    for (tab in waterguil){
+        i <- i + 1
+        write.table(tab, paste0('GUIL_', dp,'_', titles[j],'_', toString(i),  '.csv'), col.names=TRUE, sep="," )
+        
+        }
+}
+
+```
+```{python}
+# conda_install('requests')
+import requests
+import json
+import csv
+SITECODE = "CUPE" #the site code for Abby Road
+# http://data.neonscience.org/data-product-view?dpCode=DP1.00036.001
+PRODUCTCODE = "DP4.00200.001" #the product code for eddy covariance data product (DP4.00200.001).
+
+#http://data.neonscience.org/data-product-view?dpCode=DP4.00200.001
+SERVER = "http://data.neonscience.org/api/v0/" #the current server address
+
+site_response = requests.get(SERVER + 'sites/' + SITECODE)
+
+
+site_response_json = site_response.json()
+# print(json.dumps(site_response_json, indent=2)) #using json.dumps for formatting
+
+
+
+data_products = site_response_json['data']['dataProducts']
+months=[]
+#use a list comprehension here if you're feeling fancy
+for data_product in data_products:
+    if (data_product['dataProductCode'] == PRODUCTCODE):
+        months = data_product['availableMonths']
+
+# print(months)
+
+x =site_response_json
+f = csv.writer(open('CupeAvailableNEONdata.csv','w+', newline='\n'))
+
+f.writerow(['data product code', 'data product title', 'available months', 'urls'])
+codesCupe = []
+titlesCupe = []
+for key,val in x.items():
+    # print(key)
+    code = None
+    title = None
+    months = None
+    urls = None
+    flightline = False
+    for key3,val3 in val.items():
+        flightline = False
+        # print(key3)
+        if key3 == 'dataProducts':
+            # print('HERE HERE')
+            # print(val3)
+            for listitem in val3:
+                for key2, val2 in listitem.items():
+                    # if 'flightline' in val2 or 'mosaic' in val2:
+                        # flightline = True
+                    if key2 == 'dataProductCode':
+                        code = val2
+                        if not flightline:
+                            codesCupe.append(code)
+                    if key2 == 'dataProductTitle':
+                        title = val2
+                        if not flightline:
+                        titlesCupe.append(title)
+                    if key2 == 'availableMonths':
+                        months = val2
+                    if key2 == 'availableDataUrls':
+                        urls = val2
+                    if code and title and months and urls and not flightline:
+                        f.writerow([code,title,months,urls])
+                        code = None
+                        title = None
+                        months = None
+                        urls = None
+
+```
+
+
+
+```{r}
+# download all Cupeyes data
+dpIDs <- py$codes
+titles <- py$titles
+# temp 
+
+j <- 0
+for (dp in dpIDs){
+    dp
+    tryCatch(
+        expr = {watercupe <- loadByProduct(dpID=dp, site="CUPE", check.size = FALSE)},
+        error = function(e){
+            message('Caught an error!')
+            print(e)
+        }
+    )
+    i <- 0
+    j <- j +1 
+    for (tab in watercupe){
+        i <- i + 1
+        write.table(tab, paste0('CUPE_', dp,'_', titles[j], '_', toString(i), '.csv'), col.names=TRUE, sep="," )
+        
+        }
+}
+
+```

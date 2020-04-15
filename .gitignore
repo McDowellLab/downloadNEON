@@ -46,6 +46,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+*.tif
 *.cover
 *.py,cover
 .hypothesis/
@@ -115,7 +116,15 @@ venv.bak/
 
 # mkdocs documentation
 /site
-
+# ignore some data files and directories that are too big
+LiDAR/
+lczodata/
+lczodata2/
+*.csv
+*.tif
+*.txt
+*.zip
+*.xml
 # mypy
 .mypy_cache/
 .dmypy.json
