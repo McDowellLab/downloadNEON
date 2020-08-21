@@ -120,7 +120,6 @@ venv.bak/
 LiDAR/
 lczodata/
 lczodata2/
-*.csv
 *.tif
 *.txt
 *.zip
